@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 from datetime import datetime
 import logging
 from time import sleep
@@ -12,7 +13,6 @@ from time import sleep
 CHROME_OPTIONS = {
     'binary_location': '/usr/bin/google-chrome',
     'args': [
-        '--headless',
         '--no-sandbox',
         '--disable-gpu',
         '--disable-dev-shm-usage',
@@ -46,12 +46,21 @@ def format_name(campeonato):
     return CAMPEONATOS.get(campeonato, campeonato)
 
 def setup_driver():
-    options = webdriver.ChromeOptions()
+    options = Options()
     for arg in CHROME_OPTIONS['args']:
         options.add_argument(arg)
-    options.add_experimental_option('excludeSwitches', CHROME_OPTIONS['exclude_switches'])
-    options.add_experimental_option('prefs', CHROME_OPTIONS['prefs'])
-    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    options.set_capability("browserName", "chrome")
+    options.set_capability("goog:chromeOptions", {
+        "args": CHROME_OPTIONS['args'],
+        "excludeSwitches": CHROME_OPTIONS['exclude_switches'],
+        "prefs": CHROME_OPTIONS['prefs']
+    })
+    
+    driver = webdriver.Remote(
+        command_executor='http://selenium-hub:4444/wd/hub',
+        options=options
+    )
+    return driver
 
 def click_element(driver, locator, max_attempts=3, timeout=10):
     for _ in range(max_attempts):

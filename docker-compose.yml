@@ -13,6 +13,8 @@ services:
       - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
 
   api:
     build: .
@@ -37,6 +39,9 @@ services:
       - .:/api_betano
     depends_on:
       - db
+    networks:
+      - app_network
+      - grid 
 
   nginx_api:
     image: nginx:latest
@@ -48,6 +53,56 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - api
+    networks:
+      - app_network
 
+  selenium-hub:
+    image: selenium/hub:latest
+    ports:
+      - "4444:4444"
+    networks:
+      - grid
+
+  # Chrome Nodes
+  chrome-node1:
+    image: selenium/node-chrome:latest
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    networks:
+      - grid
+
+  chrome-node2:
+    image: selenium/node-chrome:latest
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    networks:
+      - grid
+
+  chrome-node3:
+    image: selenium/node-chrome:latest
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    networks:
+      - grid
+
+networks:
+  app_network:
+    driver: bridge
+  grid:
+    driver: bridge
+
+# Volumes
 volumes:
   postgres_data:
