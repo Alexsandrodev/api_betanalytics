@@ -10,7 +10,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - TZ=${TZ}
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -20,16 +20,12 @@ services:
     build: .
     container_name: api_betano
     command: uvicorn app.main:app --host 0.0.0.0  --port 3000
+    env_file: .env
     environment:
       - PYTHONUNBUFFERED=1
       - MAX_REQUESTS=1000
       - DISPLAY=:99
       - DATABASE_URL=postgresql://app_user:app_password@db:5432/campeonatos_db
-    deploy:
-      resources:
-        limits:
-          cpus: '2'
-          memory: 4G
     expose:
       - "3000"
     ports:
@@ -60,8 +56,11 @@ services:
     image: selenium/hub:latest
     ports:
       - "4444:4444"
+    environment:
+      - TZ=America/Sao_Paulo
     networks:
       - grid
+      - app_network
 
   # Chrome Nodes
   chrome-node1:
@@ -72,28 +71,7 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    networks:
-      - grid
-
-  chrome-node2:
-    image: selenium/node-chrome:latest
-    depends_on:
-      - selenium-hub
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-    networks:
-      - grid
-
-  chrome-node3:
-    image: selenium/node-chrome:latest
-    depends_on:
-      - selenium-hub
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - TZ=America/Sao_Paulo
     networks:
       - grid
 
@@ -103,6 +81,5 @@ networks:
   grid:
     driver: bridge
 
-# Volumes
 volumes:
   postgres_data:
