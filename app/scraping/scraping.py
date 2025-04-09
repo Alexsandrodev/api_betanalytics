@@ -5,36 +5,35 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
 
-def data_atualizacao():
+def dataAtualizacao():
     return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-def format_name(nome):
-    nomes = {
-        "copaAmerica": "Copa America",
-        "tacaGloriaEterna": "Taça Glória eterna",
-        "euro": "Euro",
-        "britishDerbies": "British Derbies",
-        "ligaEspanhola": "Liga Espanhola",
-        "scudettoItaliano": "Scudetto Italiano",
-        "campeonatoItaliano": "Campeonato Italiano",
-        "copaDasEstrelas": "Copa das estrelas"
-    }
-    return nomes.get(nome, nome)
-
-def wait_and_click(driver, by, value, timeout=10):
-    try:
-        element = WebDriverWait(driver, timeout).until(EC.element_to_be_clickable((by, value)))
-        element.click()
-        return True
-    except Exception as e:
-        print(f"[WARNING] Elemento não clicável: ({by}, {value}) - {e}")
-        return False
+def Format_name(text):
+    match text:
+        case "copaAmerica":
+            return "Copa America"
+        case "tacaGloriaEterna":
+            return "Taça Glória eterna"
+        case "euro":
+            return "Euro"
+        case "britishDerbies":
+            return "British Derbies"
+        case "ligaEspanhola":
+            return "Liga Espanhola"
+        case "scudettoItaliano":
+            return "Scudetto Italiano"
+        case "campeonatoItaliano":
+            return "Campeonato Italiano"
+        case "copaDasEstrelas":
+            return "Copa das estrelas"
 
 def get_html(campeonato):
     url = "https://www.betano.bet.br/virtuals/futebol/"
-    liga = format_name(campeonato)
+    liga = Format_name(campeonato)
 
     options = Options()
+    # Desative recursos para parecer menos "bot"
+    options.add_argument("--disable-blink-features=AutomationControlled")
 
     driver = webdriver.Remote(
         command_executor='http://selenium-hub:4444/wd/hub',
@@ -42,24 +41,63 @@ def get_html(campeonato):
     )
 
     try:
-        driver.get(url)
         print(f"[INFO] Acessando: {url}")
+        driver.get(url)
 
-        if not wait_and_click(driver, By.XPATH, '//button[span[text()="Sim"]]'): return None
-        if not wait_and_click(driver, By.CSS_SELECTOR, 'button[type="button"]'): return None
-        if not wait_and_click(driver, By.LINK_TEXT, liga): return None
-        if not wait_and_click(driver, By.LINK_TEXT, liga): return None
-        if not wait_and_click(driver, By.CSS_SELECTOR, "div[data-qa='virtuals-results-toggle-button']"): return None
+        try:
+            # Usa o seletor pelo atributo `data-qa`
+            button_sim = WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, '[data-qa="age-verification-modal-ok-button"]'))
+            )
+            button_sim.click()
+        except Exception as e:
+            print(f"[WARNING] Falha ao clicar em botão 'Sim': {e}")
+            driver.save_screenshot(f"error_{campeonato}_sim.png")
+            return None
 
-        WebDriverWait(driver, 10).until(
+        try:
+            # Botão X para fechar modal
+            button_x = WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[type="button"]'))
+            )
+            button_x.click()
+        except Exception as e:
+            print(f"[WARNING] Falha ao clicar em botão 'X': {e}")
+            driver.save_screenshot(f"error_{campeonato}_x.png")
+            return None
+
+        try:
+            camp = WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable((By.LINK_TEXT, f"{liga}"))
+            )
+            camp.click()
+            camp.click()
+        except Exception as e:
+            print(f"[WARNING] Falha ao clicar em campeonato '{liga}': {e}")
+            driver.save_screenshot(f"error_{campeonato}_liga.png")
+            return None
+
+        try:
+            button_results = WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "[data-qa='virtuals-results-toggle-button']"))
+            )
+            button_results.click()
+        except Exception as e:
+            print(f"[WARNING] Falha ao clicar em botão de resultados: {e}")
+            driver.save_screenshot(f"error_{campeonato}_resultados.png")
+            return None
+
+        WebDriverWait(driver, 20).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, 
                 ".tw-flex.tw-items-center.tw-justify-center.tw-mt-m.tw-mb-n.tw-mx-n"))
         )
 
+        print(f"[INFO] HTML capturado com sucesso para {campeonato}")
         return driver.page_source
 
     except Exception as e:
-        print(f"[ERRO] Erro no scraping de {campeonato}: {e}")
+        print(f"[ERRO] Falha inesperada em {campeonato}: {e}")
+        driver.save_screenshot(f"error_{campeonato}_geral.png")
         return None
 
     finally:
