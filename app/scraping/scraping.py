@@ -57,7 +57,9 @@ def get_html(campeonato):
     try:
         print(f"[INFO] Acessando: {url}")
         driver.get(url)
-
+        html = driver.page_source
+        print(html)
+        
         try:
             button_sim = WebDriverWait(driver, 20).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, '[data-qa="age-verification-modal-ok-button"]'))
