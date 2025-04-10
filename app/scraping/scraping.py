@@ -31,10 +31,12 @@ def Format_name(text):
 def get_html(campeonato):
     url = "https://www.betano.bet.br/virtuals/futebol/"
     liga = Format_name(campeonato)
+    PROXY ="51.195.40.233:28003"
 
     options = Options()
     options = uc.ChromeOptions()
     options.add_argument("--headless=new")
+    options.add_argument(f"--proxy-server={PROXY}")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-blink-features=AutomationControlled")
