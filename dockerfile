@@ -6,19 +6,14 @@ ENV TZ=America/Sao_Paulo
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update && apt-get install -y \
-    wget unzip xvfb \
-    gcc libpq-dev \
-    fonts-liberation libasound2 libatk-bridge2.0-0 \
-    libatk1.0-0 libatspi2.0-0 libcups2 libdbus-1-3 \
-    libdrm2 libgbm1 libgtk-3-0 libnspr4 libnss3 \
-    libxcomposite1 libxdamage1 libxfixes3 libxkbcommon0 \
-    libxrandr2 libvulkan1 xdg-utils \
-    --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
+    wget unzip curl gnupg \
+    libglib2.0-0 libnss3 libgconf-2-4 libfontconfig1 libxss1 libappindicator1 libasound2 libatk-bridge2.0-0 \
+    libgtk-3-0 libx11-xcb1 libxcb-dri3-0 libdrm2 libxcomposite1 libxcursor1 libxdamage1 libxi6 libxtst6 \
+    --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
-RUN wget -q -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-    && apt-get install -y /tmp/chrome.deb \
-    && rm /tmp/chrome.deb
+RUN curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-linux-signing-keyring.gpg \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-linux-signing-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update && apt-get install -y google-chrome-stable
 
 RUN pip install --upgrade pip setuptools wheel
 

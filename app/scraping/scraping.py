@@ -1,4 +1,5 @@
 from selenium import webdriver
+import undetected_chromedriver as uc
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -32,17 +33,21 @@ def get_html(campeonato):
     liga = Format_name(campeonato)
 
     options = Options()
+    options = uc.ChromeOptions()
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option('useAutomationExtension', False)
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_argument("user-agent=Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Mobile Safari/537.36")
-    options.add_argument("--window-size=1920,1080")
-    
-    driver = webdriver.Remote(
-        command_executor='http://selenium-hub:4444/wd/hub',
-        options=options
+    options.add_argument("--lang=pt-BR")
+    options.add_argument(
+        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
     )
+
+    
+    driver = uc.Chrome(options=options, headless=False)
+    driver.execute_cdp_cmd("Emulation.setTimezoneOverride", {
+        "timezoneId": "America/Sao_Paulo"
+    })
+
     
     try:
         print(f"[INFO] Acessando: {url}")
