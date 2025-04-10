@@ -34,6 +34,7 @@ def get_html(campeonato):
 
     options = Options()
     options = uc.ChromeOptions()
+    options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-blink-features=AutomationControlled")
@@ -43,7 +44,12 @@ def get_html(campeonato):
     )
 
     
-    driver = uc.Chrome(options=options, headless=False)
+    driver = uc.Chrome(
+        options=options,
+        driver_executable_path="/usr/bin/chromedriver",
+        browser_executable_path="/usr/bin/google-chrome"
+        )
+    
     driver.execute_cdp_cmd("Emulation.setTimezoneOverride", {
         "timezoneId": "America/Sao_Paulo"
     })
