@@ -32,6 +32,7 @@ def get_html(campeonato):
     liga = Format_name(campeonato)
 
     options = Options()
+    options.add_argument("--lang=pt-BR")
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
@@ -44,12 +45,23 @@ def get_html(campeonato):
         options=options
     )
 
+    driver.execute_cdp_cmd("Emulation.setTimezoneOverride", {
+            "timezoneId": "America/Sao_Paulo"
+        })
+    
+    driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        "source": """
+            Object.defineProperty(navigator, 'webdriver', {
+            get: () => undefined
+            })
+        """
+        })
+    
     try:
         print(f"[INFO] Acessando: {url}")
         driver.get(url)
 
         try:
-            # Usa o seletor pelo atributo `data-qa`
             button_sim = WebDriverWait(driver, 20).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, '[data-qa="age-verification-modal-ok-button"]'))
             )
@@ -60,7 +72,6 @@ def get_html(campeonato):
             return None
 
         try:
-            # Botão X para fechar modal
             button_x = WebDriverWait(driver, 20).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[type="button"]'))
             )
