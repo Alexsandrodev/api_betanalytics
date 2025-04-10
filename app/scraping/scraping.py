@@ -32,7 +32,6 @@ def get_html(campeonato):
     liga = Format_name(campeonato)
 
     options = Options()
-    options.add_argument("--lang=pt-BR")
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
@@ -44,18 +43,6 @@ def get_html(campeonato):
         command_executor='http://selenium-hub:4444/wd/hub',
         options=options
     )
-
-    driver.execute_cdp_cmd("Emulation.setTimezoneOverride", {
-            "timezoneId": "America/Sao_Paulo"
-        })
-    
-    driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-        "source": """
-            Object.defineProperty(navigator, 'webdriver', {
-            get: () => undefined
-            })
-        """
-        })
     
     try:
         print(f"[INFO] Acessando: {url}")

@@ -8,7 +8,6 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
-      - TZ=${TZ}
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     volumes:
@@ -25,7 +24,6 @@ services:
       - PYTHONUNBUFFERED=1
       - MAX_REQUESTS=1000
       - DISPLAY=:99
-      - DATABASE_URL=postgresql://app_user:app_password@db:5432/campeonatos_db
     expose:
       - "3000"
     ports:
@@ -56,8 +54,7 @@ services:
     image: selenium/hub:latest
     ports:
       - "4444:4444"
-    environment:
-      - TZ=America/Sao_Paulo
+
     networks:
       - grid
       - app_network
@@ -71,7 +68,6 @@ services:
       - SE_EVENT_BUS_HOST=selenium-hub
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
-      - TZ=America/Sao_Paulo
     networks:
       - grid
 
