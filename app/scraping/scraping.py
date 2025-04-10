@@ -46,8 +46,7 @@ def get_html(campeonato):
     
     driver = uc.Chrome(
         options=options,
-        driver_executable_path="/usr/bin/chromedriver",
-        browser_executable_path="/usr/bin/google-chrome"
+        headless=True
         )
     
     driver.execute_cdp_cmd("Emulation.setTimezoneOverride", {
